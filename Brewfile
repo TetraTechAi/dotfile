@@ -48,6 +48,7 @@ brew "neovim"             # Vim後継エディタ
 # Git関連
 brew "gh"                 # GitHub CLI
 brew "ghq"                # リポジトリ管理
+brew "git-delta"          # diff/blame出力の美化
 brew "git-secrets"        # シークレットスキャン
 brew "lazygit"            # Git TUI
 brew "tig"                # Git TUI（詳細表示）

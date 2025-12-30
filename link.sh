@@ -28,6 +28,7 @@ DRY_RUN=false
 LINKS=(
   "$HOME/.tmux.conf:$DOTFILE_DIR/.tmux.conf"
   "$HOME/.zshrc:$DOTFILE_DIR/.zshrc"
+  "$HOME/.gitconfig:$DOTFILE_DIR/.gitconfig"
   "$HOME/.config/starship.toml:$DOTFILE_DIR/starship.toml"
   "$HOME/.config/wezterm:$DOTFILE_DIR/wezterm"
   "$HOME/.config/nvim:$DOTFILE_DIR/nvim"
