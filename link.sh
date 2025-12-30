@@ -39,6 +39,8 @@ LINKS=(
   "$HOME/.claude/settings.json:$DOTFILE_DIR/.claude/settings.json"
   "$HOME/.claude/CLAUDE.md:$DOTFILE_DIR/.claude/CLAUDE.md"
   "$HOME/.claude/scripts:$DOTFILE_DIR/.claude/scripts"
+  "$HOME/.config/lazygit:$DOTFILE_DIR/lazygit"
+  "$HOME/commitlint.config.js:$DOTFILE_DIR/commitlint.config.js"
 )
 
 # 色定義
