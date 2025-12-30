@@ -1,7 +1,9 @@
 # CodeWhisperer pre block. Keep at the top of this file.
 [[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.pre.zsh"
-##############
-#    メイン設定 #############
+
+# ============================================================================
+# 基本設定
+# ============================================================================
 
 # Ctrl+Dでログアウトしない
 setopt IGNOREEOF
@@ -33,6 +35,10 @@ setopt correct
 # ファイル上書き防止
 setopt no_clobber
 
+# ============================================================================
+# ヒストリー設定
+# ============================================================================
+
 # ヒストリーファイル
 HISTFILE=~/.zsh_history
 
@@ -41,6 +47,9 @@ export HISTSIZE=10000
 
 # ヒストリーファイルサイズ
 export SAVEHIST=10000
+
+# タイムスタンプフォーマット
+HIST_STAMPS="yyyy-mm-dd"
 
 # 重複したコマンドを無視
 setopt hist_ignore_dups
@@ -60,9 +69,6 @@ setopt share_history
 # ヒストリーにタイムスタンプを記録
 setopt extended_history
 
-# タイムスタンプフォーマット
-HIST_STAMPS="yyyy-mm-dd"
-
 # 余分な空白を削除
 setopt hist_reduce_blanks
 
@@ -75,54 +81,100 @@ setopt hist_expand
 # 履歴をインクリメンタルに追加
 setopt inc_append_history
 
-
-
-
-##############
-# エイリアス
-##############
-
-# ls
-alias ls='ls -l --color=auto'
-alias ll='ls -alF --color=auto'
-
-# cd
-alias d='cd ~/dotfiles'
-
-# neovim
-alias vi='nvim'
-alias vim='nvim'
-
-
-#############
+# ============================================================================
 # 環境変数
-#############
+# ============================================================================
 
 # エディタ
 export EDITOR=nvim
 
 # nvim設定ファイルの場所
-# export XDG_CONFIG_HOME=~/dotfiles
 export XDG_CONFIG_HOME=~/.config
 
 # グローバルnpmモジュールのパス（czg等で必要）
 export NODE_PATH="/opt/homebrew/lib/node_modules"
 
+# ============================================================================
+# PATH設定
+# ============================================================================
 
-############
-# 評価
-############
+# pyenv（Pythonバージョン管理）
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 
-# Sheldon読み込み
+# 開発ツール
+PATH=~/.console-ninja/.bin:$PATH                              # Console Ninja
+export PATH="/Users/nakayamaseiya/.codeium/windsurf/bin:$PATH"  # Windsurf
+export PATH="$PATH:/Users/nakayamaseiya/.lmstudio/bin"          # LM Studio CLI
+
+# コンテナ関連
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/nakayamaseiya/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+# その他
+. "$HOME/.local/bin/env"
+
+# ============================================================================
+# 外部ツール初期化
+# ============================================================================
+
+# Sheldon（Zshプラグインマネージャー）
 eval "$(sheldon source)"
 
+# pyenv
+eval "$(pyenv init -)"
 
+# Starship（プロンプト）
+eval "$(starship init zsh)"
 
-############
+# zoxide（スマートcd）
+eval "$(zoxide init zsh)"
+
+# ============================================================================
+# エイリアス
+# ============================================================================
+
+# ls
+alias ls='ls -l --color=auto'
+alias ll='ls -alF --color=auto'
+
+# ディレクトリ移動
+alias d='cd ~/dotfiles'
+alias proot='cd $(git rev-parse --show-toplevel)'
+
+# neovim
+alias vi='nvim'
+alias vim='nvim'
+
+# cd（zoxide + ls）
+alias cd='zls'
+alias zz='z'
+
+# VPN
+alias vpns='check_vpn_status'
+alias vpnc='vpn_connect_with_fzf'
+alias vpnd='vpn_disconnect_if_connected'
+
+# gibo
+alias gia='create_gitignore'
+
+# ============================================================================
+# 略語展開（abbr）
+# ============================================================================
+
+abbr -S -qq vpn='vpnutil' >>/dev/null
+abbr -S -qq lg='lazygit' >>/dev/null
+abbr -S -qq -='cd -' >>/dev/null
+
+# ============================================================================
 # 関数
-############
+# ============================================================================
 
-# yazi（ファイルマネージャー）- 終了時にディレクトリ変更を反映
+# ------------------------------
+# yazi（ファイルマネージャー）
+# ------------------------------
+# 終了時にディレクトリ変更を反映
 function yy() {
   local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
   yazi "$@" --cwd-file="$tmp"
@@ -132,10 +184,9 @@ function yy() {
   rm -f -- "$tmp"
 }
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
-
-# iTerm2 Shell Integration（要事前設定）
+# ------------------------------
+# iTerm2
+# ------------------------------
 iterm2_print_user_vars() {
   iterm2_set_user_var test $(badge)
 }
@@ -146,7 +197,9 @@ function badge() {
   $(echo -n "$1" | base64)
 }
 
-# SSH接続（fzfでサーバー選択、config.d対応）
+# ------------------------------
+# SSH（fzfでサーバー選択）
+# ------------------------------
 function ssh_local() {
   local config_files=("$HOME/.ssh/config")
 
@@ -171,17 +224,19 @@ function ssh_local() {
   ssh "$server"
 }
 
-# fzfでヒストリー検索（Ctrl+R）
+# ------------------------------
+# fzf連携
+# ------------------------------
+
+# fzfでヒストリー検索
 function fzf-history-selection() {
   BUFFER=$(history -n 1 | tac -r | awk '!a[$0]++' | fzf --prompt="History > " --height=40% --reverse)
   CURSOR=$#BUFFER
   zle reset-prompt
 }
-
 zle -N fzf-history-selection
-bindkey '^R' fzf-history-selection
 
-# cdr（最近訪れたディレクトリ）
+# cdr（最近訪れたディレクトリ）設定
 if [[ -n $(echo ${^fpath}/chpwd_recent_dirs(N)) && -n $(echo ${^fpath}/cdr(N)) ]]; then
   autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
   add-zsh-hook chpwd chpwd_recent_dirs
@@ -191,7 +246,7 @@ if [[ -n $(echo ${^fpath}/chpwd_recent_dirs(N)) && -n $(echo ${^fpath}/cdr(N)) ]
   zstyle ':chpwd:*' recent-dirs-file "$HOME/.cache/chpwd-recent-dirs"
 fi
 
-# fzfで最近訪れたディレクトリに移動（Ctrl+E）
+# fzfで最近訪れたディレクトリに移動
 function fzf-cdr () {
   local selected_dir="$(cdr -l | awk '{$1=""; sub(" ", ""); print $0}' | fzf --prompt="cdr > " --query="$LBUFFER" --height=40% --reverse)"
   if [ -n "$selected_dir" ]; then
@@ -200,9 +255,8 @@ function fzf-cdr () {
   fi
 }
 zle -N fzf-cdr
-bindkey '^E' fzf-cdr
 
-# ghqで管理しているリポジトリに移動（Ctrl+X）
+# ghqで管理しているリポジトリに移動
 function fzf-src () {
   local selected_dir=$(ghq list -p | fzf --prompt="repositories > " --query="$LBUFFER" --height=40% --reverse)
   if [ -n "$selected_dir" ]; then
@@ -212,13 +266,10 @@ function fzf-src () {
   zle clear-screen
 }
 zle -N fzf-src
-bindkey '^X' fzf-src
 
-
-# Starshipプロンプト
-eval "$(starship init zsh)"
-
-# コマンド実行時刻を表示（Starship初期化後にフックを追加）
+# ------------------------------
+# コマンド実行時刻表示
+# ------------------------------
 autoload -Uz add-zsh-hook
 _cmd_executed=0
 
@@ -239,62 +290,19 @@ _show_end_time() {
 add-zsh-hook preexec _show_start_time
 add-zsh-hook precmd _show_end_time
 
-
-# zoxide（スマートcd）+ cd後に自動でls実行
-# 参考: https://github.com/ajeetdsouza/zoxide
-eval "$(zoxide init zsh)"
-
+# ------------------------------
+# zoxide wrapper
+# ------------------------------
 # zoxideのzコマンドをラップして、移動後にlsを実行
 zls() {
   z "$@" && ls
 }
-alias cd='zls'
 
-# 純粋なzoxide（ls無し）が必要な場合用
-alias zz='z'
-
-############
-# 外部ツールPATH設定
-############
-
-# pyenv（Pythonバージョン管理）
-export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-
-# 開発ツール
-PATH=~/.console-ninja/.bin:$PATH                              # Console Ninja
-export PATH="/Users/nakayamaseiya/.codeium/windsurf/bin:$PATH"  # Windsurf
-export PATH="$PATH:/Users/nakayamaseiya/.lmstudio/bin"          # LM Studio CLI
-
-# コンテナ関連
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/nakayamaseiya/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
-
-# その他
-. "$HOME/.local/bin/env"
-
-############
-# 外部ツール連携（末尾に配置）
-############
-
-# CodeWhisperer post block. Keep at the bottom of this file.
-[[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh"
-
-
-# vpnutil ( for Mac )
-abbr -S -qq vpn='vpnutil'
-alias vpns='check_vpn_status'
-alias vpnc='vpn_connect_with_fzf'
-alias vpnd='vpn_disconnect_if_connected'
-
-# vpnutil ( for Mac )
+# ------------------------------
+# VPN（vpnutil for Mac）
+# ------------------------------
 check_vpn_status() {
-  # Extract the output of vpnutil list as json.
   vpn_data=$(vpnutil list)
-
-  # Extract connected vpn.
   connected_vpns=$(echo "$vpn_data" | jq -r '.VPNs[] | select(.status == "Connected") | "\(.name) (\(.status))"')
 
   if [[ -z "$connected_vpns" ]]; then
@@ -306,31 +314,21 @@ check_vpn_status() {
 }
 
 vpn_connect_with_fzf() {
-  # Extract the output of vpnutil list as json.
   vpn_data=$(vpnutil list)
-
-  # Get the name and status of the VPN and select it with fzf.
   selected_vpn=$(echo "$vpn_data" | jq -r '.VPNs[] | "\(.name) (\(.status))"' | fzf --prompt="choose a vpn: ")
 
-  # If there is no selected VPN, exit
   if [[ -z "$selected_vpn" ]]; then
     echo "VPN selection canceled."
     return
   fi
 
-  # Extract the vpn name
   vpn_name=$(echo "$selected_vpn" | sed 's/ (.*)//')
-
-  # Connection place
   echo "connection: $vpn_name"
   vpnutil start "$vpn_name"
 }
 
 vpn_disconnect_if_connected() {
-  # Extract the output of vpnutil list as json.
   vpn_data=$(vpnutil list)
-
-  # Extract connected VPN
   connected_vpns=$(echo "$vpn_data" | jq -r '.VPNs[] | select(.status == "Connected") | .name')
 
   if [[ -z "$connected_vpns" ]]; then
@@ -339,7 +337,6 @@ vpn_disconnect_if_connected() {
     echo "Disconnect the following VPN connections:"
     echo "$connected_vpns"
 
-    # Turn off each connected VPN.
     for vpn in $connected_vpns; do
       echo "cutting: $vpn"
       vpnutil stop "$vpn"
@@ -348,36 +345,43 @@ vpn_disconnect_if_connected() {
   fi
 }
 
-abbr -S lg='lazygit' >>/dev/null
-
-alias proot='cd $(git rev-parse --show-toplevel)'
-abbr -S -qq -='cd -'
-
-alias gia='create_gitignore'
-
-# giboで.gitignoreを作成
+# ------------------------------
+# gibo（gitignoreボイラープレート）
+# ------------------------------
 create_gitignore() {
     local input_file="$1"
 
-    # 引数がない場合は.gitignoreに追加
     if [[ -z "$input_file" ]]; then
         input_file=".gitignore"
     fi
 
-    # テンプレートを選択
     local selected=$(gibo list | fzf \
         --multi \
         --preview "gibo dump {} | bat --style=numbers --color=always --paging=never")
 
-    # 未選択の場合は終了
     if [[ -z "$selected" ]]; then
         echo "No templates selected. Exiting."
         return
     fi
 
-    # 選択したテンプレートを指定したファイルに追加
     echo "$selected" | xargs gibo dump >> "$input_file"
-
-    # 結果のファイルをbatで表示
     bat "$input_file"
 }
+
+# ============================================================================
+# キーバインド
+# ============================================================================
+
+bindkey '^R' fzf-history-selection
+bindkey '^E' fzf-cdr
+bindkey '^X' fzf-src
+
+# ============================================================================
+# 外部ツール連携
+# ============================================================================
+
+# iTerm2 Shell Integration
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+# CodeWhisperer post block. Keep at the bottom of this file.
+[[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh"
