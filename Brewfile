@@ -133,6 +133,11 @@ cask "karabiner-elements" # キーボードカスタマイズ
 cask "jordanbaird-ice"    # メニューバー管理
 cask "xquartz"            # X11
 
+# ウィンドウマネージャー・ステータスバー
+cask "nikitabobko/tap/aerospace"  # タイルウィンドウマネージャー
+brew "FelixKratz/formulae/borders" # ウィンドウボーダー
+brew "FelixKratz/formulae/sketchybar" # ステータスバー
+
 # AI
 cask "kiro-cli"           # AI CLI
 
