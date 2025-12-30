@@ -278,3 +278,69 @@ export PATH="/Users/nakayamaseiya/.rd/bin:$PATH"
 
 # CodeWhisperer post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh"
+
+
+# vpnutil ( for Mac )
+abbr -S -qq vpn='vpnutil'
+alias vpns='check_vpn_status'
+alias vpnc='vpn_connect_with_fzf'
+alias vpnd='vpn_disconnect_if_connected'
+
+# vpnutil ( for Mac )
+check_vpn_status() {
+  # Extract the output of vpnutil list as json.
+  vpn_data=$(vpnutil list)
+
+  # Extract connected vpn.
+  connected_vpns=$(echo "$vpn_data" | jq -r '.VPNs[] | select(.status == "Connected") | "\(.name) (\(.status))"')
+
+  if [[ -z "$connected_vpns" ]]; then
+    echo "No Connected"
+  else
+    echo "Connected VPN:"
+    echo "$connected_vpns"
+  fi
+}
+
+vpn_connect_with_fzf() {
+  # Extract the output of vpnutil list as json.
+  vpn_data=$(vpnutil list)
+
+  # Get the name and status of the VPN and select it with fzf.
+  selected_vpn=$(echo "$vpn_data" | jq -r '.VPNs[] | "\(.name) (\(.status))"' | fzf --prompt="choose a vpn: ")
+
+  # If there is no selected VPN, exit
+  if [[ -z "$selected_vpn" ]]; then
+    echo "VPN selection canceled."
+    return
+  fi
+
+  # Extract the vpn name
+  vpn_name=$(echo "$selected_vpn" | sed 's/ (.*)//')
+
+  # Connection place
+  echo "connection: $vpn_name"
+  vpnutil start "$vpn_name"
+}
+
+vpn_disconnect_if_connected() {
+  # Extract the output of vpnutil list as json.
+  vpn_data=$(vpnutil list)
+
+  # Extract connected VPN
+  connected_vpns=$(echo "$vpn_data" | jq -r '.VPNs[] | select(.status == "Connected") | .name')
+
+  if [[ -z "$connected_vpns" ]]; then
+    echo "No vpn connected."
+  else
+    echo "Disconnect the following VPN connections:"
+    echo "$connected_vpns"
+
+    # Turn off each connected VPN.
+    for vpn in $connected_vpns; do
+      echo "cutting: $vpn"
+      vpnutil stop "$vpn"
+    done
+    echo "Disconnected all vpn connections."
+  fi
+}
