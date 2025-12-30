@@ -223,7 +223,9 @@ else
   log_success "Setup completed!"
   echo ""
   log_info "You can now use:"
-  log_info "  yazi  - Terminal file manager"
-  log_info "  yy    - yazi with directory change on exit"
+  log_info "  nvim    - Neovim editor"
+  log_info "  yazi    - Terminal file manager"
+  log_info "  yy      - yazi with directory change on exit"
+  log_info "  lazygit - Git TUI (lg)"
 fi
 echo "============================================================================"

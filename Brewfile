@@ -49,7 +49,8 @@ brew "neovim"             # Vim後継エディタ
 brew "gh"                 # GitHub CLI
 brew "ghq"                # リポジトリ管理
 brew "git-secrets"        # シークレットスキャン
-brew "tig"                # Git TUI
+brew "lazygit"            # Git TUI
+brew "tig"                # Git TUI（詳細表示）
 
 # 開発言語・ランタイム
 brew "deno"               # JavaScript/TypeScriptランタイム
