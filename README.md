@@ -7,6 +7,7 @@
 | ファイル/ディレクトリ | 説明 | リンク先 | 詳細 |
 |-------------------|------|----------|------|
 | `.zshrc` | Zsh設定 | `~/.zshrc` | - |
+| `.gitconfig` | Git設定（delta含む） | `~/.gitconfig` | - |
 | `.tmux.conf` | Tmux設定 | `~/.tmux.conf` | - |
 | `starship.toml` | Starshipプロンプト設定 | `~/.config/starship.toml` | - |
 | `nvim/` | Neovim設定 | `~/.config/nvim` | [README](nvim/README.md) |
